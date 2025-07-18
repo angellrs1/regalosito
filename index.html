@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Atrapa corazones 💖</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: linear-gradient(to bottom, #ffdce0, #ffeef0);
+      font-family: 'Arial', sans-serif;
+    }
+    #game {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+    .heart {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      background: url('https://cdn-icons-png.flaticon.com/512/833/833472.png') no-repeat center;
+      background-size: contain;
+    }
+    #player {
+      position: absolute;
+      bottom: 20px;
+      width: 80px;
+      height: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: url('https://cdn-icons-png.flaticon.com/512/833/833472.png') no-repeat center;
+      background-size: contain;
+    }
+    #message {
+      position: absolute;
+      top: 10px;
+      width: 100%;
+      text-align: center;
+      font-size: 1.3em;
+      color: #d10068;
+      font-weight: bold;
+      text-shadow: 1px 1px white;
+      z-index: 5;
+    }
+    #counter {
+      position: absolute;
+      top: 40px;
+      left: 10px;
+      font-size: 1em;
+      background: white;
+      padding: 5px 10px;
+      border-radius: 10px;
+      color: #ff1493;
+      font-weight: bold;
+      z-index: 5;
+    }
+    #boss {
+      position: absolute;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 160px;
+      height: 160px;
+      display: none;
+      background: url('https://i.ibb.co/JjdL9D5N/muejejeje.jpg') no-repeat center;
+      background-size: contain;
+      cursor: pointer;
+      z-index: 5;
+    }
+    #final-msg {
+      position: absolute;
+      top: 30%;
+      width: 100%;
+      text-align: center;
+      font-size: 2em;
+      color: #ff0055;
+      display: none;
+      z-index: 10;
+    }
+    #kiss {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 200px;
+      height: 200px;
+      transform: translate(-50%, -50%);
+      background: url('https://media.giphy.com/media/MDJ9IbxxvDUQM/giphy.gif') no-repeat center;
+      background-size: cover;
+      display: none;
+      z-index: 10;
+    }
+    #start-screen, #restart-button {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #ff1493;
+      color: white;
+      font-size: 1.5em;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 20px;
+      cursor: pointer;
+      z-index: 15;
+    }
+    #restart-button {
+      top: 70%;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <div id="player"></div>
+    <div id="message">💌 Atrapa los corazones para salvar a tu amor 💌</div>
+    <div id="counter">Corazones: 0</div>
+    <div id="boss" title="Haz clic para derrotarlo 😾"></div>
+    <div id="final-msg">¡me salvaste! 💖 Te mando un beso 😘</div>
+    <div id="kiss"></div>
+    <button id="start-screen">Iniciar Juego</button>
+    <button id="restart-button">Jugar de nuevo</button>
+
+    <!-- Audios -->
+    <audio id="final-song" src="https://www.bensound.com/bensound-music/bensound-love.mp3"></audio>
+    <audio id="boss-music" src="https://cdn.pixabay.com/download/audio/2022/10/08/audio_baaab0d3f2.mp3?filename=danger-scene-118241.mp3"></audio>
+  </div>
+
+  <script>
+    const game = document.getElementById('game');
+    const player = document.getElementById('player');
+    const message = document.getElementById('message');
+    const counter = document.getElementById('counter');
+    const boss = document.getElementById('boss');
+    const finalMsg = document.getElementById('final-msg');
+    const finalSong = document.getElementById('final-song');
+    const bossMusic = document.getElementById('boss-music');
+    const kiss = document.getElementById('kiss');
+    const startBtn = document.getElementById('start-screen');
+    const restartBtn = document.getElementById('restart-button');
+
+    const frases = [
+      "Amo tus ojitos cafés hermosos de cocholatito",
+      "Tu sonrisa ilumina mi mundo 🌟",
+      "Me haces feliz solo con existir 💖",
+      "Eres mi persona favorita ❤️",
+      "Gracias por ser tú, tan única 💘",
+      "Tu amor me da vida 💕",
+      "Tú y yo, por siempre siempre siempre✨",
+      "ya te bañates?",
+      "dame un besito",
+      "quieres ser mi noviesita denuevo?",
+      "TE AMOOOOOOOOOOOOOOOOOOOOOOOO",
+      "Eres mi bebe mi bebita fiu fiu",
+      "te extraño"
+    ];
+
+    let indexFrase = 0;
+    let corazones = 0;
+    let bossHitPoints = 5;
+    let bossActivo = false;
+    let heartInterval;
+    let bossDirection = 1;
+
+    function iniciarJuego() {
+      corazones = 0;
+      bossHitPoints = 5;
+      bossActivo = false;
+      indexFrase = 0;
+      counter.innerText = "Corazones: 0";
+      message.innerText = "💌 Atrapa los corazones para salvar a tu amor 💌";
+      boss.style.display = 'none';
+      finalMsg.style.display = 'none';
+      kiss.style.display = 'none';
+      restartBtn.style.display = 'none';
+      message.style.display = 'block';
+      counter.style.display = 'block';
+      startBtn.style.display = 'none';
+
+      heartInterval = setInterval(createHeart, 1000);
+    }
+
+    startBtn.onclick = iniciarJuego;
+    restartBtn.onclick = () => location.reload();
+
+    document.addEventListener('mousemove', (e) => {
+      let x = e.clientX - 40;
+      player.style.left = `${x}px`;
+    });
+
+    function mostrarFrase() {
+      message.innerText = frases[indexFrase % frases.length];
+      indexFrase++;
+    }
+
+    function createHeart() {
+      const heart = document.createElement('div');
+      heart.className = 'heart';
+      heart.style.left = `${Math.random() * (window.innerWidth - 40)}px`;
+      game.appendChild(heart);
+
+      let y = 0;
+      const fall = setInterval(() => {
+        y += 3;
+        heart.style.top = `${y}px`;
+
+        const rectHeart = heart.getBoundingClientRect();
+        const rectPlayer = player.getBoundingClientRect();
+
+        if (
+          rectHeart.bottom >= rectPlayer.top &&
+          rectHeart.left < rectPlayer.right &&
+          rectHeart.right > rectPlayer.left
+        ) {
+          clearInterval(fall);
+          heart.remove();
+          corazones++;
+          counter.innerText = `Corazones: ${corazones}`;
+          mostrarFrase();
+
+          if (corazones >= 7 && !bossActivo) {
+            activarBoss();
+          }
+        }
+
+        if (y > window.innerHeight) {
+          clearInterval(fall);
+          heart.remove();
+        }
+      }, 20);
+    }
+
+    function activarBoss() {
+      bossActivo = true;
+      boss.style.display = 'block';
+      message.innerText = "¡MIAU! Tengo secuestrado a tu novio 😼 ¡Derrotame!";
+      clearInterval(heartInterval);
+      bossMusic.play();
+      moverBoss();
+    }
+
+    function moverBoss() {
+      let pos = 50;
+      const move = setInterval(() => {
+        if (!bossActivo) return clearInterval(move);
+        pos += bossDirection * 1.5;
+        if (pos >= 90 || pos <= 10) bossDirection *= -1;
+        boss.style.left = `${pos}%`;
+      }, 30);
+    }
+
+    boss.addEventListener('click', () => {
+      bossHitPoints--;
+      boss.style.transform = `translateX(-50%) scale(${1 + 0.1 * (5 - bossHitPoints)})`;
+
+      if (bossHitPoints <= 0) {
+        bossActivo = false;
+        boss.style.display = 'none';
+        message.style.display = 'none';
+        counter.style.display = 'none';
+        finalMsg.style.display = 'block';
+        kiss.style.display = 'block';
+        restartBtn.style.display = 'block';
+        bossMusic.pause();
+        finalSong.play();
+      }
+    });
+  </script>
+</body>
+</html>
